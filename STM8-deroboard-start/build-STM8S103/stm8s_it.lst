@@ -1,0 +1,98 @@
+                                      1 .module stm8s_it
+                                      2 .optsdcc -mstm8
+                                      3 .globl _TRAP_IRQHandler
+                                      4 .globl _TLI_IRQHandler
+                                      5 .globl _AWU_IRQHandler
+                                      6 .globl _CLK_IRQHandler
+                                      7 .globl _EXTI_PORTA_IRQHandler
+                                      8 .globl _EXTI_PORTB_IRQHandler
+                                      9 .globl _EXTI_PORTC_IRQHandler
+                                     10 .globl _EXTI_PORTD_IRQHandler
+                                     11 .globl _EXTI_PORTE_IRQHandler
+                                     12 .globl _SPI_IRQHandler
+                                     13 .globl _TIM1_UPD_OVF_TRG_BRK_IRQHandler
+                                     14 .globl _TIM1_CAP_COM_IRQHandler
+                                     15 .globl _TIM2_UPD_OVF_BRK_IRQHandler
+                                     16 .globl _TIM2_CAP_COM_IRQHandler
+                                     17 .globl _UART1_TX_IRQHandler
+                                     18 .globl _UART1_RX_IRQHandler
+                                     19 .globl _I2C_IRQHandler
+                                     20 .globl _ADC1_IRQHandler
+                                     21 .globl _EEPROM_EEC_IRQHandler
+                                     22 .area DATA
+                                     23 .area INITIALIZED
+                                     24 .area DABS (ABS)
+                                     25 .area HOME
+                                     26 .area GSINIT
+                                     27 .area GSFINAL
+                                     28 .area CONST
+                                     29 .area INITIALIZER
+                                     30 .area CODE
+                                     31 .area HOME
+                                     32 .area GSINIT
+                                     33 .area GSFINAL
+                                     34 .area GSINIT
+                                     35 .area HOME
+                                     36 .area HOME
+                                     37 .area CODE
+      000000                         38 _TRAP_IRQHandler:
+      000000                         39 00101$:
+      000000 80               [11]   40 iret
+      000001                         41 _TLI_IRQHandler:
+      000001                         42 00101$:
+      000001 80               [11]   43 iret
+      000002                         44 _AWU_IRQHandler:
+      000002                         45 00101$:
+      000002 80               [11]   46 iret
+      000003                         47 _CLK_IRQHandler:
+      000003                         48 00101$:
+      000003 80               [11]   49 iret
+      000004                         50 _EXTI_PORTA_IRQHandler:
+      000004                         51 00101$:
+      000004 80               [11]   52 iret
+      000005                         53 _EXTI_PORTB_IRQHandler:
+      000005                         54 00101$:
+      000005 80               [11]   55 iret
+      000006                         56 _EXTI_PORTC_IRQHandler:
+      000006                         57 00101$:
+      000006 80               [11]   58 iret
+      000007                         59 _EXTI_PORTD_IRQHandler:
+      000007                         60 00101$:
+      000007 80               [11]   61 iret
+      000008                         62 _EXTI_PORTE_IRQHandler:
+      000008                         63 00101$:
+      000008 80               [11]   64 iret
+      000009                         65 _SPI_IRQHandler:
+      000009                         66 00101$:
+      000009 80               [11]   67 iret
+      00000A                         68 _TIM1_UPD_OVF_TRG_BRK_IRQHandler:
+      00000A                         69 00101$:
+      00000A 80               [11]   70 iret
+      00000B                         71 _TIM1_CAP_COM_IRQHandler:
+      00000B                         72 00101$:
+      00000B 80               [11]   73 iret
+      00000C                         74 _TIM2_UPD_OVF_BRK_IRQHandler:
+      00000C                         75 00101$:
+      00000C 80               [11]   76 iret
+      00000D                         77 _TIM2_CAP_COM_IRQHandler:
+      00000D                         78 00101$:
+      00000D 80               [11]   79 iret
+      00000E                         80 _UART1_TX_IRQHandler:
+      00000E                         81 00101$:
+      00000E 80               [11]   82 iret
+      00000F                         83 _UART1_RX_IRQHandler:
+      00000F                         84 00101$:
+      00000F 80               [11]   85 iret
+      000010                         86 _I2C_IRQHandler:
+      000010                         87 00101$:
+      000010 80               [11]   88 iret
+      000011                         89 _ADC1_IRQHandler:
+      000011                         90 00101$:
+      000011 80               [11]   91 iret
+      000012                         92 _EEPROM_EEC_IRQHandler:
+      000012                         93 00101$:
+      000012 80               [11]   94 iret
+                                     95 .area CODE
+                                     96 .area CONST
+                                     97 .area INITIALIZER
+                                     98 .area CABS (ABS)
