@@ -1,0 +1,684 @@
+                                      1 .module stm8_hd44780
+                                      2 .optsdcc -mstm8
+                                      3 .globl _GPIO_ReadInputPin
+                                      4 .globl _GPIO_WriteLow
+                                      5 .globl _GPIO_WriteHigh
+                                      6 .globl _GPIO_Init
+                                      7 .globl _lcd_puts
+                                      8 .globl _lcd_init
+                                      9 .globl _lcd_gotoxy
+                                     10 .globl _lcd_init_hw
+                                     11 .globl _lcd_bus_outputs
+                                     12 .globl _lcd_bus_inputs
+                                     13 .globl _lcd_bus_set
+                                     14 .globl _lcd_bus_read
+                                     15 .globl _lcd_e_tick
+                                     16 .globl _lcd_command
+                                     17 .globl _lcd_data
+                                     18 .globl _lcd_read
+                                     19 .globl _lcd_busy_wait
+                                     20 .area DATA
+                                     21 .area INITIALIZED
+                                     22 .area DABS (ABS)
+                                     23 .area HOME
+                                     24 .area GSINIT
+                                     25 .area GSFINAL
+                                     26 .area CONST
+                                     27 .area INITIALIZER
+                                     28 .area CODE
+                                     29 .area HOME
+                                     30 .area GSINIT
+                                     31 .area GSFINAL
+                                     32 .area GSINIT
+                                     33 .area HOME
+                                     34 .area HOME
+                                     35 .area CODE
+      00820C                         36 __delay_cycl:
+      00820C 9D               [ 1]   37 nop
+      00820D 9D               [ 1]   38 nop
+      00820E 1E 03            [ 2]   39 ldw	x, (0x03, sp)
+      008210                         40 00101$:
+      008210 5A               [ 2]   41 decw	x
+      008211 5D               [ 2]   42 tnzw	x
+      008212 27 03            [ 1]   43 jreq	00117$
+      008214 CC 82 10         [ 2]   44 jp	00101$
+      008217                         45 00117$:
+      008217 9D               [ 1]   46 nop
+      008218                         47 00104$:
+      008218 81               [ 4]   48 ret
+      008219                         49 __delay_us:
+      008219 16 03            [ 2]   50 ldw	y, (0x03, sp)
+      00821B 5F               [ 1]   51 clrw	x
+      00821C 90 89            [ 2]   52 pushw	y
+      00821E 89               [ 2]   53 pushw	x
+      00821F 4B 00            [ 1]   54 push	#0x00
+      008221 4B 24            [ 1]   55 push	#0x24
+      008223 4B F4            [ 1]   56 push	#0xf4
+      008225 4B 00            [ 1]   57 push	#0x00
+      008227 CD 88 EC         [ 4]   58 call	__mullong
+      00822A 5B 08            [ 2]   59 addw	sp, #8
+      00822C 4B 40            [ 1]   60 push	#0x40
+      00822E 4B 42            [ 1]   61 push	#0x42
+      008230 4B 0F            [ 1]   62 push	#0x0f
+      008232 4B 00            [ 1]   63 push	#0x00
+      008234 89               [ 2]   64 pushw	x
+      008235 90 89            [ 2]   65 pushw	y
+      008237 CD 88 92         [ 4]   66 call	__divulong
+      00823A 5B 08            [ 2]   67 addw	sp, #8
+      00823C 90 54            [ 2]   68 srlw	y
+      00823E 56               [ 2]   69 rrcw	x
+      00823F 90 54            [ 2]   70 srlw	y
+      008241 56               [ 2]   71 rrcw	x
+      008242 90 54            [ 2]   72 srlw	y
+      008244 56               [ 2]   73 rrcw	x
+      008245 5C               [ 1]   74 incw	x
+      008246 51               [ 1]   75 exgw	x, y
+      008247 9D               [ 1]   76 nop
+      008248 9D               [ 1]   77 nop
+      008249                         78 00101$:
+      008249 93               [ 1]   79 ldw	x, y
+      00824A 5A               [ 2]   80 decw	x
+      00824B 90 93            [ 1]   81 ldw	y, x
+      00824D 5D               [ 2]   82 tnzw	x
+      00824E 27 03            [ 1]   83 jreq	00117$
+      008250 CC 82 49         [ 2]   84 jp	00101$
+      008253                         85 00117$:
+      008253 9D               [ 1]   86 nop
+      008254                         87 00105$:
+      008254 81               [ 4]   88 ret
+      008255                         89 _lcd_puts:
+      008255 1E 03            [ 2]   90 ldw	x, (0x03, sp)
+      008257                         91 00101$:
+      008257 F6               [ 1]   92 ld	a, (x)
+      008258 4D               [ 1]   93 tnz	a
+      008259 26 03            [ 1]   94 jrne	00117$
+      00825B CC 82 69         [ 2]   95 jp	00104$
+      00825E                         96 00117$:
+      00825E 89               [ 2]   97 pushw	x
+      00825F 88               [ 1]   98 push	a
+      008260 CD 85 23         [ 4]   99 call	_lcd_data
+      008263 84               [ 1]  100 pop	a
+      008264 85               [ 2]  101 popw	x
+      008265 5C               [ 1]  102 incw	x
+      008266 CC 82 57         [ 2]  103 jp	00101$
+      008269                        104 00104$:
+      008269 81               [ 4]  105 ret
+      00826A                        106 _lcd_init:
+      00826A CD 83 2F         [ 4]  107 call	_lcd_init_hw
+      00826D CD 83 5A         [ 4]  108 call	_lcd_bus_outputs
+      008270 90 AE 01 D9      [ 2]  109 ldw	y, #0x01d9
+      008274 9D               [ 1]  110 nop
+      008275 9D               [ 1]  111 nop
+      008276                        112 00101$:
+      008276 93               [ 1]  113 ldw	x, y
+      008277 5A               [ 2]  114 decw	x
+      008278 90 93            [ 1]  115 ldw	y, x
+      00827A 5D               [ 2]  116 tnzw	x
+      00827B 27 03            [ 1]  117 jreq	00163$
+      00827D CC 82 76         [ 2]  118 jp	00101$
+      008280                        119 00163$:
+      008280 9D               [ 1]  120 nop
+      008281 4B 03            [ 1]  121 push	#0x03
+      008283 CD 83 C4         [ 4]  122 call	_lcd_bus_set
+      008286 84               [ 1]  123 pop	a
+      008287 CD 84 AF         [ 4]  124 call	_lcd_e_tick
+      00828A 90 AE 00 93      [ 2]  125 ldw	y, #0x0093
+      00828E 9D               [ 1]  126 nop
+      00828F 9D               [ 1]  127 nop
+      008290                        128 00106$:
+      008290 93               [ 1]  129 ldw	x, y
+      008291 5A               [ 2]  130 decw	x
+      008292 90 93            [ 1]  131 ldw	y, x
+      008294 5D               [ 2]  132 tnzw	x
+      008295 27 03            [ 1]  133 jreq	00164$
+      008297 CC 82 90         [ 2]  134 jp	00106$
+      00829A                        135 00164$:
+      00829A 9D               [ 1]  136 nop
+      00829B 4B 03            [ 1]  137 push	#0x03
+      00829D CD 83 C4         [ 4]  138 call	_lcd_bus_set
+      0082A0 84               [ 1]  139 pop	a
+      0082A1 CD 84 AF         [ 4]  140 call	_lcd_e_tick
+      0082A4 90 AE 00 C9      [ 2]  141 ldw	y, #0x00c9
+      0082A8 9D               [ 1]  142 nop
+      0082A9 9D               [ 1]  143 nop
+      0082AA                        144 00111$:
+      0082AA 93               [ 1]  145 ldw	x, y
+      0082AB 5A               [ 2]  146 decw	x
+      0082AC 90 93            [ 1]  147 ldw	y, x
+      0082AE 5D               [ 2]  148 tnzw	x
+      0082AF 27 03            [ 1]  149 jreq	00165$
+      0082B1 CC 82 AA         [ 2]  150 jp	00111$
+      0082B4                        151 00165$:
+      0082B4 9D               [ 1]  152 nop
+      0082B5 4B 03            [ 1]  153 push	#0x03
+      0082B7 CD 83 C4         [ 4]  154 call	_lcd_bus_set
+      0082BA 84               [ 1]  155 pop	a
+      0082BB CD 84 AF         [ 4]  156 call	_lcd_e_tick
+      0082BE 4B 02            [ 1]  157 push	#0x02
+      0082C0 CD 83 C4         [ 4]  158 call	_lcd_bus_set
+      0082C3 84               [ 1]  159 pop	a
+      0082C4 CD 84 AF         [ 4]  160 call	_lcd_e_tick
+      0082C7 90 AE 00 51      [ 2]  161 ldw	y, #0x0051
+      0082CB 9D               [ 1]  162 nop
+      0082CC 9D               [ 1]  163 nop
+      0082CD                        164 00116$:
+      0082CD 93               [ 1]  165 ldw	x, y
+      0082CE 5A               [ 2]  166 decw	x
+      0082CF 90 93            [ 1]  167 ldw	y, x
+      0082D1 5D               [ 2]  168 tnzw	x
+      0082D2 27 03            [ 1]  169 jreq	00166$
+      0082D4 CC 82 CD         [ 2]  170 jp	00116$
+      0082D7                        171 00166$:
+      0082D7 9D               [ 1]  172 nop
+      0082D8 4B 28            [ 1]  173 push	#0x28
+      0082DA CD 84 E8         [ 4]  174 call	_lcd_command
+      0082DD 84               [ 1]  175 pop	a
+      0082DE 4B 06            [ 1]  176 push	#0x06
+      0082E0 CD 84 E8         [ 4]  177 call	_lcd_command
+      0082E3 84               [ 1]  178 pop	a
+      0082E4 4B 0C            [ 1]  179 push	#0x0c
+      0082E6 CD 84 E8         [ 4]  180 call	_lcd_command
+      0082E9 84               [ 1]  181 pop	a
+      0082EA 4B 14            [ 1]  182 push	#0x14
+      0082EC CD 84 E8         [ 4]  183 call	_lcd_command
+      0082EF 84               [ 1]  184 pop	a
+      0082F0 4B 01            [ 1]  185 push	#0x01
+      0082F2 CD 84 E8         [ 4]  186 call	_lcd_command
+      0082F5 84               [ 1]  187 pop	a
+      0082F6 4B 02            [ 1]  188 push	#0x02
+      0082F8 CD 84 E8         [ 4]  189 call	_lcd_command
+      0082FB 84               [ 1]  190 pop	a
+      0082FC                        191 00121$:
+      0082FC 81               [ 4]  192 ret
+      0082FD                        193 _lcd_gotoxy:
+      0082FD 5F               [ 1]  194 clrw	x
+      0082FE 7B 03            [ 1]  195 ld	a, (0x03, sp)
+      008300 A1 0F            [ 1]  196 cp	a, #0x0f
+      008302 22 03            [ 1]  197 jrugt	00125$
+      008304 CC 83 0B         [ 2]  198 jp	00102$
+      008307                        199 00125$:
+      008307 A6 0F            [ 1]  200 ld	a, #0x0f
+      008309 6B 03            [ 1]  201 ld	(0x03, sp), a
+      00830B                        202 00102$:
+      00830B 0D 04            [ 1]  203 tnz	(0x04, sp)
+      00830D 27 03            [ 1]  204 jreq	00126$
+      00830F CC 83 16         [ 2]  205 jp	00106$
+      008312                        206 00126$:
+      008312 5F               [ 1]  207 clrw	x
+      008313 CC 83 24         [ 2]  208 jp	00107$
+      008316                        209 00106$:
+      008316 7B 04            [ 1]  210 ld	a, (0x04, sp)
+      008318 4A               [ 1]  211 dec	a
+      008319 26 03            [ 1]  212 jrne	00128$
+      00831B CC 83 21         [ 2]  213 jp	00129$
+      00831E                        214 00128$:
+      00831E CC 83 24         [ 2]  215 jp	00107$
+      008321                        216 00129$:
+      008321 A6 40            [ 1]  217 ld	a, #0x40
+      008323 97               [ 1]  218 ld	xl, a
+      008324                        219 00107$:
+      008324 9F               [ 1]  220 ld	a, xl
+      008325 1B 03            [ 1]  221 add	a, (0x03, sp)
+      008327 AA 80            [ 1]  222 or	a, #0x80
+      008329 88               [ 1]  223 push	a
+      00832A CD 84 E8         [ 4]  224 call	_lcd_command
+      00832D 84               [ 1]  225 pop	a
+      00832E                        226 00108$:
+      00832E 81               [ 4]  227 ret
+      00832F                        228 _lcd_init_hw:
+      00832F 4B C0            [ 1]  229 push	#0xc0
+      008331 4B 10            [ 1]  230 push	#0x10
+      008333 4B 0F            [ 1]  231 push	#0x0f
+      008335 4B 50            [ 1]  232 push	#0x50
+      008337 CD 86 53         [ 4]  233 call	_GPIO_Init
+      00833A 5B 04            [ 2]  234 addw	sp, #4
+      00833C 4B C0            [ 1]  235 push	#0xc0
+      00833E 4B 20            [ 1]  236 push	#0x20
+      008340 4B 0F            [ 1]  237 push	#0x0f
+      008342 4B 50            [ 1]  238 push	#0x50
+      008344 CD 86 53         [ 4]  239 call	_GPIO_Init
+      008347 5B 04            [ 2]  240 addw	sp, #4
+      008349 4B D0            [ 1]  241 push	#0xd0
+      00834B 4B 40            [ 1]  242 push	#0x40
+      00834D 4B 0F            [ 1]  243 push	#0x0f
+      00834F 4B 50            [ 1]  244 push	#0x50
+      008351 CD 86 53         [ 4]  245 call	_GPIO_Init
+      008354 5B 04            [ 2]  246 addw	sp, #4
+      008356 CC 83 5A         [ 2]  247 jp	_lcd_bus_outputs
+      008359                        248 00101$:
+      008359 81               [ 4]  249 ret
+      00835A                        250 _lcd_bus_outputs:
+      00835A 4B C0            [ 1]  251 push	#0xc0
+      00835C 4B 10            [ 1]  252 push	#0x10
+      00835E 4B 0A            [ 1]  253 push	#0x0a
+      008360 4B 50            [ 1]  254 push	#0x50
+      008362 CD 86 53         [ 4]  255 call	_GPIO_Init
+      008365 5B 04            [ 2]  256 addw	sp, #4
+      008367 4B C0            [ 1]  257 push	#0xc0
+      008369 4B 20            [ 1]  258 push	#0x20
+      00836B 4B 0A            [ 1]  259 push	#0x0a
+      00836D 4B 50            [ 1]  260 push	#0x50
+      00836F CD 86 53         [ 4]  261 call	_GPIO_Init
+      008372 5B 04            [ 2]  262 addw	sp, #4
+      008374 4B C0            [ 1]  263 push	#0xc0
+      008376 4B 40            [ 1]  264 push	#0x40
+      008378 4B 0A            [ 1]  265 push	#0x0a
+      00837A 4B 50            [ 1]  266 push	#0x50
+      00837C CD 86 53         [ 4]  267 call	_GPIO_Init
+      00837F 5B 04            [ 2]  268 addw	sp, #4
+      008381 4B C0            [ 1]  269 push	#0xc0
+      008383 4B 80            [ 1]  270 push	#0x80
+      008385 4B 0A            [ 1]  271 push	#0x0a
+      008387 4B 50            [ 1]  272 push	#0x50
+      008389 CD 86 53         [ 4]  273 call	_GPIO_Init
+      00838C 5B 04            [ 2]  274 addw	sp, #4
+      00838E                        275 00101$:
+      00838E 81               [ 4]  276 ret
+      00838F                        277 _lcd_bus_inputs:
+      00838F 4B 00            [ 1]  278 push	#0x00
+      008391 4B 10            [ 1]  279 push	#0x10
+      008393 4B 0A            [ 1]  280 push	#0x0a
+      008395 4B 50            [ 1]  281 push	#0x50
+      008397 CD 86 53         [ 4]  282 call	_GPIO_Init
+      00839A 5B 04            [ 2]  283 addw	sp, #4
+      00839C 4B 00            [ 1]  284 push	#0x00
+      00839E 4B 20            [ 1]  285 push	#0x20
+      0083A0 4B 0A            [ 1]  286 push	#0x0a
+      0083A2 4B 50            [ 1]  287 push	#0x50
+      0083A4 CD 86 53         [ 4]  288 call	_GPIO_Init
+      0083A7 5B 04            [ 2]  289 addw	sp, #4
+      0083A9 4B 00            [ 1]  290 push	#0x00
+      0083AB 4B 40            [ 1]  291 push	#0x40
+      0083AD 4B 0A            [ 1]  292 push	#0x0a
+      0083AF 4B 50            [ 1]  293 push	#0x50
+      0083B1 CD 86 53         [ 4]  294 call	_GPIO_Init
+      0083B4 5B 04            [ 2]  295 addw	sp, #4
+      0083B6 4B 00            [ 1]  296 push	#0x00
+      0083B8 4B 80            [ 1]  297 push	#0x80
+      0083BA 4B 0A            [ 1]  298 push	#0x0a
+      0083BC 4B 50            [ 1]  299 push	#0x50
+      0083BE CD 86 53         [ 4]  300 call	_GPIO_Init
+      0083C1 5B 04            [ 2]  301 addw	sp, #4
+      0083C3                        302 00101$:
+      0083C3 81               [ 4]  303 ret
+      0083C4                        304 _lcd_bus_set:
+      0083C4 7B 03            [ 1]  305 ld	a, (0x03, sp)
+      0083C6 44               [ 1]  306 srl	a
+      0083C7 25 03            [ 1]  307 jrc	00135$
+      0083C9 CC 83 DA         [ 2]  308 jp	00102$
+      0083CC                        309 00135$:
+      0083CC 4B 10            [ 1]  310 push	#0x10
+      0083CE 4B 0A            [ 1]  311 push	#0x0a
+      0083D0 4B 50            [ 1]  312 push	#0x50
+      0083D2 CD 86 DA         [ 4]  313 call	_GPIO_WriteHigh
+      0083D5 5B 03            [ 2]  314 addw	sp, #3
+      0083D7 CC 83 E5         [ 2]  315 jp	00103$
+      0083DA                        316 00102$:
+      0083DA 4B 10            [ 1]  317 push	#0x10
+      0083DC 4B 0A            [ 1]  318 push	#0x0a
+      0083DE 4B 50            [ 1]  319 push	#0x50
+      0083E0 CD 86 E1         [ 4]  320 call	_GPIO_WriteLow
+      0083E3 5B 03            [ 2]  321 addw	sp, #3
+      0083E5                        322 00103$:
+      0083E5 7B 03            [ 1]  323 ld	a, (0x03, sp)
+      0083E7 A5 02            [ 1]  324 bcp	a, #0x02
+      0083E9 26 03            [ 1]  325 jrne	00136$
+      0083EB CC 83 FC         [ 2]  326 jp	00105$
+      0083EE                        327 00136$:
+      0083EE 4B 20            [ 1]  328 push	#0x20
+      0083F0 4B 0A            [ 1]  329 push	#0x0a
+      0083F2 4B 50            [ 1]  330 push	#0x50
+      0083F4 CD 86 DA         [ 4]  331 call	_GPIO_WriteHigh
+      0083F7 5B 03            [ 2]  332 addw	sp, #3
+      0083F9 CC 84 07         [ 2]  333 jp	00106$
+      0083FC                        334 00105$:
+      0083FC 4B 20            [ 1]  335 push	#0x20
+      0083FE 4B 0A            [ 1]  336 push	#0x0a
+      008400 4B 50            [ 1]  337 push	#0x50
+      008402 CD 86 E1         [ 4]  338 call	_GPIO_WriteLow
+      008405 5B 03            [ 2]  339 addw	sp, #3
+      008407                        340 00106$:
+      008407 7B 03            [ 1]  341 ld	a, (0x03, sp)
+      008409 A5 04            [ 1]  342 bcp	a, #0x04
+      00840B 26 03            [ 1]  343 jrne	00137$
+      00840D CC 84 1E         [ 2]  344 jp	00108$
+      008410                        345 00137$:
+      008410 4B 40            [ 1]  346 push	#0x40
+      008412 4B 0A            [ 1]  347 push	#0x0a
+      008414 4B 50            [ 1]  348 push	#0x50
+      008416 CD 86 DA         [ 4]  349 call	_GPIO_WriteHigh
+      008419 5B 03            [ 2]  350 addw	sp, #3
+      00841B CC 84 29         [ 2]  351 jp	00109$
+      00841E                        352 00108$:
+      00841E 4B 40            [ 1]  353 push	#0x40
+      008420 4B 0A            [ 1]  354 push	#0x0a
+      008422 4B 50            [ 1]  355 push	#0x50
+      008424 CD 86 E1         [ 4]  356 call	_GPIO_WriteLow
+      008427 5B 03            [ 2]  357 addw	sp, #3
+      008429                        358 00109$:
+      008429 7B 03            [ 1]  359 ld	a, (0x03, sp)
+      00842B A5 08            [ 1]  360 bcp	a, #0x08
+      00842D 26 03            [ 1]  361 jrne	00138$
+      00842F CC 84 40         [ 2]  362 jp	00111$
+      008432                        363 00138$:
+      008432 4B 80            [ 1]  364 push	#0x80
+      008434 4B 0A            [ 1]  365 push	#0x0a
+      008436 4B 50            [ 1]  366 push	#0x50
+      008438 CD 86 DA         [ 4]  367 call	_GPIO_WriteHigh
+      00843B 5B 03            [ 2]  368 addw	sp, #3
+      00843D CC 84 4B         [ 2]  369 jp	00113$
+      008440                        370 00111$:
+      008440 4B 80            [ 1]  371 push	#0x80
+      008442 4B 0A            [ 1]  372 push	#0x0a
+      008444 4B 50            [ 1]  373 push	#0x50
+      008446 CD 86 E1         [ 4]  374 call	_GPIO_WriteLow
+      008449 5B 03            [ 2]  375 addw	sp, #3
+      00844B                        376 00113$:
+      00844B 81               [ 4]  377 ret
+      00844C                        378 _lcd_bus_read:
+      00844C 88               [ 1]  379 push	a
+      00844D 0F 01            [ 1]  380 clr	(0x01, sp)
+      00844F 4B 10            [ 1]  381 push	#0x10
+      008451 4B 0A            [ 1]  382 push	#0x0a
+      008453 4B 50            [ 1]  383 push	#0x50
+      008455 CD 86 F6         [ 4]  384 call	_GPIO_ReadInputPin
+      008458 5B 03            [ 2]  385 addw	sp, #3
+      00845A 4D               [ 1]  386 tnz	a
+      00845B 26 03            [ 1]  387 jrne	00131$
+      00845D CC 84 65         [ 2]  388 jp	00102$
+      008460                        389 00131$:
+      008460 04 01            [ 1]  390 srl	(0x01, sp)
+      008462 99               [ 1]  391 scf
+      008463 09 01            [ 1]  392 rlc	(0x01, sp)
+      008465                        393 00102$:
+      008465 4B 20            [ 1]  394 push	#0x20
+      008467 4B 0A            [ 1]  395 push	#0x0a
+      008469 4B 50            [ 1]  396 push	#0x50
+      00846B CD 86 F6         [ 4]  397 call	_GPIO_ReadInputPin
+      00846E 5B 03            [ 2]  398 addw	sp, #3
+      008470 4D               [ 1]  399 tnz	a
+      008471 26 03            [ 1]  400 jrne	00132$
+      008473 CC 84 7C         [ 2]  401 jp	00104$
+      008476                        402 00132$:
+      008476 7B 01            [ 1]  403 ld	a, (0x01, sp)
+      008478 AA 02            [ 1]  404 or	a, #0x02
+      00847A 6B 01            [ 1]  405 ld	(0x01, sp), a
+      00847C                        406 00104$:
+      00847C 4B 40            [ 1]  407 push	#0x40
+      00847E 4B 0A            [ 1]  408 push	#0x0a
+      008480 4B 50            [ 1]  409 push	#0x50
+      008482 CD 86 F6         [ 4]  410 call	_GPIO_ReadInputPin
+      008485 5B 03            [ 2]  411 addw	sp, #3
+      008487 4D               [ 1]  412 tnz	a
+      008488 26 03            [ 1]  413 jrne	00133$
+      00848A CC 84 93         [ 2]  414 jp	00106$
+      00848D                        415 00133$:
+      00848D 7B 01            [ 1]  416 ld	a, (0x01, sp)
+      00848F AA 04            [ 1]  417 or	a, #0x04
+      008491 6B 01            [ 1]  418 ld	(0x01, sp), a
+      008493                        419 00106$:
+      008493 4B 80            [ 1]  420 push	#0x80
+      008495 4B 0A            [ 1]  421 push	#0x0a
+      008497 4B 50            [ 1]  422 push	#0x50
+      008499 CD 86 F6         [ 4]  423 call	_GPIO_ReadInputPin
+      00849C 5B 03            [ 2]  424 addw	sp, #3
+      00849E 4D               [ 1]  425 tnz	a
+      00849F 26 03            [ 1]  426 jrne	00134$
+      0084A1 CC 84 AA         [ 2]  427 jp	00108$
+      0084A4                        428 00134$:
+      0084A4 7B 01            [ 1]  429 ld	a, (0x01, sp)
+      0084A6 AA 08            [ 1]  430 or	a, #0x08
+      0084A8 6B 01            [ 1]  431 ld	(0x01, sp), a
+      0084AA                        432 00108$:
+      0084AA 7B 01            [ 1]  433 ld	a, (0x01, sp)
+      0084AC                        434 00109$:
+      0084AC 5B 01            [ 2]  435 addw	sp, #1
+      0084AE 81               [ 4]  436 ret
+      0084AF                        437 _lcd_e_tick:
+      0084AF 4B 40            [ 1]  438 push	#0x40
+      0084B1 4B 0F            [ 1]  439 push	#0x0f
+      0084B3 4B 50            [ 1]  440 push	#0x50
+      0084B5 CD 86 DA         [ 4]  441 call	_GPIO_WriteHigh
+      0084B8 5B 03            [ 2]  442 addw	sp, #3
+      0084BA 90 AE 00 03      [ 2]  443 ldw	y, #0x0003
+      0084BE 9D               [ 1]  444 nop
+      0084BF 9D               [ 1]  445 nop
+      0084C0                        446 00101$:
+      0084C0 93               [ 1]  447 ldw	x, y
+      0084C1 5A               [ 2]  448 decw	x
+      0084C2 90 93            [ 1]  449 ldw	y, x
+      0084C4 5D               [ 2]  450 tnzw	x
+      0084C5 27 03            [ 1]  451 jreq	00133$
+      0084C7 CC 84 C0         [ 2]  452 jp	00101$
+      0084CA                        453 00133$:
+      0084CA 9D               [ 1]  454 nop
+      0084CB 4B 40            [ 1]  455 push	#0x40
+      0084CD 4B 0F            [ 1]  456 push	#0x0f
+      0084CF 4B 50            [ 1]  457 push	#0x50
+      0084D1 CD 86 E1         [ 4]  458 call	_GPIO_WriteLow
+      0084D4 5B 03            [ 2]  459 addw	sp, #3
+      0084D6 90 AE 00 03      [ 2]  460 ldw	y, #0x0003
+      0084DA 9D               [ 1]  461 nop
+      0084DB 9D               [ 1]  462 nop
+      0084DC                        463 00106$:
+      0084DC 93               [ 1]  464 ldw	x, y
+      0084DD 5A               [ 2]  465 decw	x
+      0084DE 90 93            [ 1]  466 ldw	y, x
+      0084E0 5D               [ 2]  467 tnzw	x
+      0084E1 27 03            [ 1]  468 jreq	00134$
+      0084E3 CC 84 DC         [ 2]  469 jp	00106$
+      0084E6                        470 00134$:
+      0084E6 9D               [ 1]  471 nop
+      0084E7                        472 00111$:
+      0084E7 81               [ 4]  473 ret
+      0084E8                        474 _lcd_command:
+      0084E8 4B 10            [ 1]  475 push	#0x10
+      0084EA 4B 0F            [ 1]  476 push	#0x0f
+      0084EC 4B 50            [ 1]  477 push	#0x50
+      0084EE CD 86 E1         [ 4]  478 call	_GPIO_WriteLow
+      0084F1 5B 03            [ 2]  479 addw	sp, #3
+      0084F3 90 AE 00 03      [ 2]  480 ldw	y, #0x0003
+      0084F7 9D               [ 1]  481 nop
+      0084F8 9D               [ 1]  482 nop
+      0084F9                        483 00101$:
+      0084F9 93               [ 1]  484 ldw	x, y
+      0084FA 5A               [ 2]  485 decw	x
+      0084FB 90 93            [ 1]  486 ldw	y, x
+      0084FD 5D               [ 2]  487 tnzw	x
+      0084FE 27 03            [ 1]  488 jreq	00118$
+      008500 CC 84 F9         [ 2]  489 jp	00101$
+      008503                        490 00118$:
+      008503 9D               [ 1]  491 nop
+      008504 7B 03            [ 1]  492 ld	a, (0x03, sp)
+      008506 4E               [ 1]  493 swap	a
+      008507 A4 0F            [ 1]  494 and	a, #0x0f
+      008509 A4 0F            [ 1]  495 and	a, #0x0f
+      00850B 88               [ 1]  496 push	a
+      00850C CD 83 C4         [ 4]  497 call	_lcd_bus_set
+      00850F 84               [ 1]  498 pop	a
+      008510 CD 84 AF         [ 4]  499 call	_lcd_e_tick
+      008513 7B 03            [ 1]  500 ld	a, (0x03, sp)
+      008515 A4 0F            [ 1]  501 and	a, #0x0f
+      008517 88               [ 1]  502 push	a
+      008518 CD 83 C4         [ 4]  503 call	_lcd_bus_set
+      00851B 84               [ 1]  504 pop	a
+      00851C CD 84 AF         [ 4]  505 call	_lcd_e_tick
+      00851F CC 86 1B         [ 2]  506 jp	_lcd_busy_wait
+      008522                        507 00106$:
+      008522 81               [ 4]  508 ret
+      008523                        509 _lcd_data:
+      008523 4B 10            [ 1]  510 push	#0x10
+      008525 4B 0F            [ 1]  511 push	#0x0f
+      008527 4B 50            [ 1]  512 push	#0x50
+      008529 CD 86 DA         [ 4]  513 call	_GPIO_WriteHigh
+      00852C 5B 03            [ 2]  514 addw	sp, #3
+      00852E 90 AE 00 03      [ 2]  515 ldw	y, #0x0003
+      008532 9D               [ 1]  516 nop
+      008533 9D               [ 1]  517 nop
+      008534                        518 00101$:
+      008534 93               [ 1]  519 ldw	x, y
+      008535 5A               [ 2]  520 decw	x
+      008536 90 93            [ 1]  521 ldw	y, x
+      008538 5D               [ 2]  522 tnzw	x
+      008539 27 03            [ 1]  523 jreq	00118$
+      00853B CC 85 34         [ 2]  524 jp	00101$
+      00853E                        525 00118$:
+      00853E 9D               [ 1]  526 nop
+      00853F 7B 03            [ 1]  527 ld	a, (0x03, sp)
+      008541 4E               [ 1]  528 swap	a
+      008542 A4 0F            [ 1]  529 and	a, #0x0f
+      008544 A4 0F            [ 1]  530 and	a, #0x0f
+      008546 88               [ 1]  531 push	a
+      008547 CD 83 C4         [ 4]  532 call	_lcd_bus_set
+      00854A 84               [ 1]  533 pop	a
+      00854B CD 84 AF         [ 4]  534 call	_lcd_e_tick
+      00854E 7B 03            [ 1]  535 ld	a, (0x03, sp)
+      008550 A4 0F            [ 1]  536 and	a, #0x0f
+      008552 88               [ 1]  537 push	a
+      008553 CD 83 C4         [ 4]  538 call	_lcd_bus_set
+      008556 84               [ 1]  539 pop	a
+      008557 CD 84 AF         [ 4]  540 call	_lcd_e_tick
+      00855A CC 86 1B         [ 2]  541 jp	_lcd_busy_wait
+      00855D                        542 00106$:
+      00855D 81               [ 4]  543 ret
+      00855E                        544 _lcd_read:
+      00855E 88               [ 1]  545 push	a
+      00855F 4B 10            [ 1]  546 push	#0x10
+      008561 4B 0F            [ 1]  547 push	#0x0f
+      008563 4B 50            [ 1]  548 push	#0x50
+      008565 CD 86 E1         [ 4]  549 call	_GPIO_WriteLow
+      008568 5B 03            [ 2]  550 addw	sp, #3
+      00856A CD 83 8F         [ 4]  551 call	_lcd_bus_inputs
+      00856D 4B 20            [ 1]  552 push	#0x20
+      00856F 4B 0F            [ 1]  553 push	#0x0f
+      008571 4B 50            [ 1]  554 push	#0x50
+      008573 CD 86 DA         [ 4]  555 call	_GPIO_WriteHigh
+      008576 5B 03            [ 2]  556 addw	sp, #3
+      008578 90 AE 00 03      [ 2]  557 ldw	y, #0x0003
+      00857C 9D               [ 1]  558 nop
+      00857D 9D               [ 1]  559 nop
+      00857E                        560 00101$:
+      00857E 93               [ 1]  561 ldw	x, y
+      00857F 5A               [ 2]  562 decw	x
+      008580 90 93            [ 1]  563 ldw	y, x
+      008582 5D               [ 2]  564 tnzw	x
+      008583 27 03            [ 1]  565 jreq	00178$
+      008585 CC 85 7E         [ 2]  566 jp	00101$
+      008588                        567 00178$:
+      008588 9D               [ 1]  568 nop
+      008589 4B 40            [ 1]  569 push	#0x40
+      00858B 4B 0F            [ 1]  570 push	#0x0f
+      00858D 4B 50            [ 1]  571 push	#0x50
+      00858F CD 86 DA         [ 4]  572 call	_GPIO_WriteHigh
+      008592 5B 03            [ 2]  573 addw	sp, #3
+      008594 90 AE 00 03      [ 2]  574 ldw	y, #0x0003
+      008598 9D               [ 1]  575 nop
+      008599 9D               [ 1]  576 nop
+      00859A                        577 00106$:
+      00859A 93               [ 1]  578 ldw	x, y
+      00859B 5A               [ 2]  579 decw	x
+      00859C 90 93            [ 1]  580 ldw	y, x
+      00859E 5D               [ 2]  581 tnzw	x
+      00859F 27 03            [ 1]  582 jreq	00179$
+      0085A1 CC 85 9A         [ 2]  583 jp	00106$
+      0085A4                        584 00179$:
+      0085A4 9D               [ 1]  585 nop
+      0085A5 CD 84 4C         [ 4]  586 call	_lcd_bus_read
+      0085A8 4E               [ 1]  587 swap	a
+      0085A9 A4 F0            [ 1]  588 and	a, #0xf0
+      0085AB 6B 01            [ 1]  589 ld	(0x01, sp), a
+      0085AD 4B 40            [ 1]  590 push	#0x40
+      0085AF 4B 0F            [ 1]  591 push	#0x0f
+      0085B1 4B 50            [ 1]  592 push	#0x50
+      0085B3 CD 86 E1         [ 4]  593 call	_GPIO_WriteLow
+      0085B6 5B 03            [ 2]  594 addw	sp, #3
+      0085B8 90 AE 00 03      [ 2]  595 ldw	y, #0x0003
+      0085BC 9D               [ 1]  596 nop
+      0085BD 9D               [ 1]  597 nop
+      0085BE                        598 00111$:
+      0085BE 93               [ 1]  599 ldw	x, y
+      0085BF 5A               [ 2]  600 decw	x
+      0085C0 90 93            [ 1]  601 ldw	y, x
+      0085C2 5D               [ 2]  602 tnzw	x
+      0085C3 27 03            [ 1]  603 jreq	00180$
+      0085C5 CC 85 BE         [ 2]  604 jp	00111$
+      0085C8                        605 00180$:
+      0085C8 9D               [ 1]  606 nop
+      0085C9 4B 40            [ 1]  607 push	#0x40
+      0085CB 4B 0F            [ 1]  608 push	#0x0f
+      0085CD 4B 50            [ 1]  609 push	#0x50
+      0085CF CD 86 DA         [ 4]  610 call	_GPIO_WriteHigh
+      0085D2 5B 03            [ 2]  611 addw	sp, #3
+      0085D4 90 AE 00 03      [ 2]  612 ldw	y, #0x0003
+      0085D8 9D               [ 1]  613 nop
+      0085D9 9D               [ 1]  614 nop
+      0085DA                        615 00116$:
+      0085DA 93               [ 1]  616 ldw	x, y
+      0085DB 5A               [ 2]  617 decw	x
+      0085DC 90 93            [ 1]  618 ldw	y, x
+      0085DE 5D               [ 2]  619 tnzw	x
+      0085DF 27 03            [ 1]  620 jreq	00181$
+      0085E1 CC 85 DA         [ 2]  621 jp	00116$
+      0085E4                        622 00181$:
+      0085E4 9D               [ 1]  623 nop
+      0085E5 CD 84 4C         [ 4]  624 call	_lcd_bus_read
+      0085E8 1A 01            [ 1]  625 or	a, (0x01, sp)
+      0085EA 6B 01            [ 1]  626 ld	(0x01, sp), a
+      0085EC 4B 40            [ 1]  627 push	#0x40
+      0085EE 4B 0F            [ 1]  628 push	#0x0f
+      0085F0 4B 50            [ 1]  629 push	#0x50
+      0085F2 CD 86 E1         [ 4]  630 call	_GPIO_WriteLow
+      0085F5 5B 03            [ 2]  631 addw	sp, #3
+      0085F7 90 AE 00 03      [ 2]  632 ldw	y, #0x0003
+      0085FB 9D               [ 1]  633 nop
+      0085FC 9D               [ 1]  634 nop
+      0085FD                        635 00121$:
+      0085FD 93               [ 1]  636 ldw	x, y
+      0085FE 5A               [ 2]  637 decw	x
+      0085FF 90 93            [ 1]  638 ldw	y, x
+      008601 5D               [ 2]  639 tnzw	x
+      008602 27 03            [ 1]  640 jreq	00182$
+      008604 CC 85 FD         [ 2]  641 jp	00121$
+      008607                        642 00182$:
+      008607 9D               [ 1]  643 nop
+      008608 4B 20            [ 1]  644 push	#0x20
+      00860A 4B 0F            [ 1]  645 push	#0x0f
+      00860C 4B 50            [ 1]  646 push	#0x50
+      00860E CD 86 E1         [ 4]  647 call	_GPIO_WriteLow
+      008611 5B 03            [ 2]  648 addw	sp, #3
+      008613 CD 83 5A         [ 4]  649 call	_lcd_bus_outputs
+      008616 7B 01            [ 1]  650 ld	a, (0x01, sp)
+      008618                        651 00126$:
+      008618 5B 01            [ 2]  652 addw	sp, #1
+      00861A 81               [ 4]  653 ret
+      00861B                        654 _lcd_busy_wait:
+      00861B AE 01 F4         [ 2]  655 ldw	x, #0x01f4
+      00861E                        656 00102$:
+      00861E 5D               [ 2]  657 tnzw	x
+      00861F 26 03            [ 1]  658 jrne	00131$
+      008621 CC 86 33         [ 2]  659 jp	00114$
+      008624                        660 00131$:
+      008624 89               [ 2]  661 pushw	x
+      008625 CD 85 5E         [ 4]  662 call	_lcd_read
+      008628 85               [ 2]  663 popw	x
+      008629 4D               [ 1]  664 tnz	a
+      00862A 2B 03            [ 1]  665 jrmi	00132$
+      00862C CC 86 33         [ 2]  666 jp	00114$
+      00862F                        667 00132$:
+      00862F 5A               [ 2]  668 decw	x
+      008630 CC 86 1E         [ 2]  669 jp	00102$
+      008633                        670 00114$:
+      008633 5D               [ 2]  671 tnzw	x
+      008634 27 03            [ 1]  672 jreq	00133$
+      008636 CC 86 3E         [ 2]  673 jp	00106$
+      008639                        674 00133$:
+      008639 A6 01            [ 1]  675 ld	a, #0x01
+      00863B CC 86 3F         [ 2]  676 jp	00108$
+      00863E                        677 00106$:
+      00863E 4F               [ 1]  678 clr	a
+      00863F                        679 00108$:
+      00863F 81               [ 4]  680 ret
+                                    681 .area CODE
+                                    682 .area CONST
+                                    683 .area INITIALIZER
+                                    684 .area CABS (ABS)

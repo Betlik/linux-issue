@@ -1,0 +1,148 @@
+                                      1 .module stm8s_gpio
+                                      2 .optsdcc -mstm8
+                                      3 .globl _GPIO_Init
+                                      4 .globl _GPIO_WriteHigh
+                                      5 .globl _GPIO_WriteLow
+                                      6 .globl _GPIO_WriteReverse
+                                      7 .globl _GPIO_ReadInputPin
+                                      8 .area DATA
+                                      9 .area INITIALIZED
+                                     10 .area DABS (ABS)
+                                     11 .area HOME
+                                     12 .area GSINIT
+                                     13 .area GSFINAL
+                                     14 .area CONST
+                                     15 .area INITIALIZER
+                                     16 .area CODE
+                                     17 .area HOME
+                                     18 .area GSINIT
+                                     19 .area GSFINAL
+                                     20 .area GSINIT
+                                     21 .area HOME
+                                     22 .area HOME
+                                     23 .area CODE
+      000000                         24 _GPIO_Init:
+      000000 52 05            [ 2]   25 sub	sp, #5
+      000002 16 08            [ 2]   26 ldw	y, (0x08, sp)
+      000004 93               [ 1]   27 ldw	x, y
+      000005 1C 00 04         [ 2]   28 addw	x, #0x0004
+      000008 1F 01            [ 2]   29 ldw	(0x01, sp), x
+      00000A 1E 01            [ 2]   30 ldw	x, (0x01, sp)
+      00000C F6               [ 1]   31 ld	a, (x)
+      00000D 88               [ 1]   32 push	a
+      00000E 7B 0B            [ 1]   33 ld	a, (0x0b, sp)
+      000010 43               [ 1]   34 cpl	a
+      000011 6B 04            [ 1]   35 ld	(0x04, sp), a
+      000013 84               [ 1]   36 pop	a
+      000014 14 03            [ 1]   37 and	a, (0x03, sp)
+      000016 1E 01            [ 2]   38 ldw	x, (0x01, sp)
+      000018 F7               [ 1]   39 ld	(x), a
+      000019 93               [ 1]   40 ldw	x, y
+      00001A 5C               [ 1]   41 incw	x
+      00001B 5C               [ 1]   42 incw	x
+      00001C 1F 04            [ 2]   43 ldw	(0x04, sp), x
+      00001E 0D 0B            [ 1]   44 tnz	(0x0b, sp)
+      000020 2B 03            [ 1]   45 jrmi	00135$
+      000022 CCr00r48         [ 2]   46 jp	00105$
+      000025                         47 00135$:
+      000025 90 F6            [ 1]   48 ld	a, (y)
+      000027 88               [ 1]   49 push	a
+      000028 7B 0C            [ 1]   50 ld	a, (0x0c, sp)
+      00002A A5 10            [ 1]   51 bcp	a, #0x10
+      00002C 84               [ 1]   52 pop	a
+      00002D 26 03            [ 1]   53 jrne	00136$
+      00002F CCr00r39         [ 2]   54 jp	00102$
+      000032                         55 00136$:
+      000032 1A 0A            [ 1]   56 or	a, (0x0a, sp)
+      000034 90 F7            [ 1]   57 ld	(y), a
+      000036 CCr00r3D         [ 2]   58 jp	00103$
+      000039                         59 00102$:
+      000039 14 03            [ 1]   60 and	a, (0x03, sp)
+      00003B 90 F7            [ 1]   61 ld	(y), a
+      00003D                         62 00103$:
+      00003D 1E 04            [ 2]   63 ldw	x, (0x04, sp)
+      00003F F6               [ 1]   64 ld	a, (x)
+      000040 1A 0A            [ 1]   65 or	a, (0x0a, sp)
+      000042 1E 04            [ 2]   66 ldw	x, (0x04, sp)
+      000044 F7               [ 1]   67 ld	(x), a
+      000045 CCr00r50         [ 2]   68 jp	00106$
+      000048                         69 00105$:
+      000048 1E 04            [ 2]   70 ldw	x, (0x04, sp)
+      00004A F6               [ 1]   71 ld	a, (x)
+      00004B 14 03            [ 1]   72 and	a, (0x03, sp)
+      00004D 1E 04            [ 2]   73 ldw	x, (0x04, sp)
+      00004F F7               [ 1]   74 ld	(x), a
+      000050                         75 00106$:
+      000050 93               [ 1]   76 ldw	x, y
+      000051 1C 00 03         [ 2]   77 addw	x, #0x0003
+      000054 F6               [ 1]   78 ld	a, (x)
+      000055 88               [ 1]   79 push	a
+      000056 7B 0C            [ 1]   80 ld	a, (0x0c, sp)
+      000058 A5 40            [ 1]   81 bcp	a, #0x40
+      00005A 84               [ 1]   82 pop	a
+      00005B 26 03            [ 1]   83 jrne	00137$
+      00005D CCr00r66         [ 2]   84 jp	00108$
+      000060                         85 00137$:
+      000060 1A 0A            [ 1]   86 or	a, (0x0a, sp)
+      000062 F7               [ 1]   87 ld	(x), a
+      000063 CCr00r69         [ 2]   88 jp	00109$
+      000066                         89 00108$:
+      000066 14 03            [ 1]   90 and	a, (0x03, sp)
+      000068 F7               [ 1]   91 ld	(x), a
+      000069                         92 00109$:
+      000069 1E 01            [ 2]   93 ldw	x, (0x01, sp)
+      00006B F6               [ 1]   94 ld	a, (x)
+      00006C 88               [ 1]   95 push	a
+      00006D 7B 0C            [ 1]   96 ld	a, (0x0c, sp)
+      00006F A5 20            [ 1]   97 bcp	a, #0x20
+      000071 84               [ 1]   98 pop	a
+      000072 26 03            [ 1]   99 jrne	00138$
+      000074 CCr00r7F         [ 2]  100 jp	00111$
+      000077                        101 00138$:
+      000077 1A 0A            [ 1]  102 or	a, (0x0a, sp)
+      000079 1E 01            [ 2]  103 ldw	x, (0x01, sp)
+      00007B F7               [ 1]  104 ld	(x), a
+      00007C CCr00r84         [ 2]  105 jp	00113$
+      00007F                        106 00111$:
+      00007F 14 03            [ 1]  107 and	a, (0x03, sp)
+      000081 1E 01            [ 2]  108 ldw	x, (0x01, sp)
+      000083 F7               [ 1]  109 ld	(x), a
+      000084                        110 00113$:
+      000084 5B 05            [ 2]  111 addw	sp, #5
+      000086 81               [ 4]  112 ret
+      000087                        113 _GPIO_WriteHigh:
+      000087 1E 03            [ 2]  114 ldw	x, (0x03, sp)
+      000089 F6               [ 1]  115 ld	a, (x)
+      00008A 1A 05            [ 1]  116 or	a, (0x05, sp)
+      00008C F7               [ 1]  117 ld	(x), a
+      00008D                        118 00101$:
+      00008D 81               [ 4]  119 ret
+      00008E                        120 _GPIO_WriteLow:
+      00008E 88               [ 1]  121 push	a
+      00008F 1E 04            [ 2]  122 ldw	x, (0x04, sp)
+      000091 F6               [ 1]  123 ld	a, (x)
+      000092 6B 01            [ 1]  124 ld	(0x01, sp), a
+      000094 7B 06            [ 1]  125 ld	a, (0x06, sp)
+      000096 43               [ 1]  126 cpl	a
+      000097 14 01            [ 1]  127 and	a, (0x01, sp)
+      000099 F7               [ 1]  128 ld	(x), a
+      00009A                        129 00101$:
+      00009A 84               [ 1]  130 pop	a
+      00009B 81               [ 4]  131 ret
+      00009C                        132 _GPIO_WriteReverse:
+      00009C 1E 03            [ 2]  133 ldw	x, (0x03, sp)
+      00009E F6               [ 1]  134 ld	a, (x)
+      00009F 18 05            [ 1]  135 xor	a, (0x05, sp)
+      0000A1 F7               [ 1]  136 ld	(x), a
+      0000A2                        137 00101$:
+      0000A2 81               [ 4]  138 ret
+      0000A3                        139 _GPIO_ReadInputPin:
+      0000A3 1E 03            [ 2]  140 ldw	x, (0x03, sp)
+      0000A5 E6 01            [ 1]  141 ld	a, (0x1, x)
+      0000A7 14 05            [ 1]  142 and	a, (0x05, sp)
+      0000A9                        143 00101$:
+      0000A9 81               [ 4]  144 ret
+                                    145 .area CODE
+                                    146 .area CONST
+                                    147 .area INITIALIZER
+                                    148 .area CABS (ABS)

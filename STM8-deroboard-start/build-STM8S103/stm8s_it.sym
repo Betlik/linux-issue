@@ -1,0 +1,31 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (STMicroelectronics STM8), page 1.
+Hexadecimal [24-Bits]
+
+Symbol Table
+
+    .__.$$$.=  002710 L   |     .__.ABS.=  000000 G   |     .__.CPU.=  000000 L
+    .__.H$L.=  000001 L   |   9 _ADC1_IR   000011 GR  |   9 _AWU_IRQ   000002 GR
+  9 _CLK_IRQ   000003 GR  |   9 _EEPROM_   000012 GR  |   9 _EXTI_PO   000004 GR
+  9 _EXTI_PO   000005 GR  |   9 _EXTI_PO   000006 GR  |   9 _EXTI_PO   000007 GR
+  9 _EXTI_PO   000008 GR  |   9 _I2C_IRQ   000010 GR  |   9 _SPI_IRQ   000009 GR
+  9 _TIM1_CA   00000B GR  |   9 _TIM1_UP   00000A GR  |   9 _TIM2_CA   00000D GR
+  9 _TIM2_UP   00000C GR  |   9 _TLI_IRQ   000001 GR  |   9 _TRAP_IR   000000 GR
+  9 _UART1_R   00000F GR  |   9 _UART1_T   00000E GR
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (STMicroelectronics STM8), page 2.
+Hexadecimal [24-Bits]
+
+Area Table
+
+   0 _CODE      size      0   flags    0
+   1 DATA       size      0   flags    0
+   2 INITIALI   size      0   flags    0
+   3 DABS       size      0   flags    8
+   4 HOME       size      0   flags    0
+   5 GSINIT     size      0   flags    0
+   6 GSFINAL    size      0   flags    0
+   7 CONST      size      0   flags    0
+   8 INITIALI   size      0   flags    0
+   9 CODE       size     13   flags    0
+   A CABS       size      0   flags    8
+
